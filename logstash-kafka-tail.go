@@ -19,6 +19,7 @@ type Message map[string]interface{}
 type args []string
 
 const (
+	version       = "0.1.0"
 	defaultHosts  = "localhost:9092"
 	usageHosts    = "kafka hosts\nalso read from env 'KAFKA_LOGGING_HOSTS'"
 	defaultTopic  = "logstash"
@@ -28,7 +29,6 @@ const (
 	defaultFormat = "%{@timestamp} %{type} %{HOSTNAME} %{level} %{message}"
 	usageFormat   = "format output in grok syntax\nalso read from env 'KAFKA_LOGGING_FORMAT'"
 	usageFilter   = "filter messages, specify like 'type:chaos-monkey'\nall filters must match when applied multiple times"
-	version       = "0.0.1"
 	usageVersion  = "prints the version"
 )
 
@@ -123,6 +123,7 @@ func spawnPartitionConsumer(wg *sync.WaitGroup, master sarama.Consumer, partitio
 	go consumePartition(wg, master, partition)
 }
 
+// connects to one of a list of brokers
 func connectToBroker(config *sarama.Config) (*sarama.Broker, error) {
 	var err error
 	for _, host := range hosts {

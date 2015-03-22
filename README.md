@@ -35,6 +35,17 @@ It's possible to set `-hosts`, `-topic` and `-format` as evironment variable lik
 
 The `-filter` option shows only those messages, which match every single key/value pair specified in the option.
 
+Logging to Kafka
+----------------
+
+The following logging frameworks are capable of logging to kafka:
+
+* [logstash-kafka](https://github.com/joekiller/logstash-kafka): the kafka plugin for logstash which will be core in logstash 1.5
+* [logstash-logger](https://github.com/dwbutler/logstash-logger): a ruby logger
+* [logback-kafka-appender](https://github.com/otto-de/logback-kafka-appender): a logback appander
+
+Please send a PR if your logger is missing.
+
 Building
 --------
 
