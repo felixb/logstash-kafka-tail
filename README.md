@@ -7,9 +7,12 @@ It consumes a kafka topic and parses the logstash/json formated log messages to 
 Installation
 ------------
 
-Install the binary with `go get` or download prebuid binarys from the release section.
+Install the binary with `go get` and `go install` or download prebuid binarys from the release section.
 
+    export GOPATH=${HOME}/go
+    export PATH=${GOPATH}/bin:${PATH}
     go get github.com/felixb/logstash-kafka-tail
+    go install github.com/felixb/logstash-kafka-tail
 
 Usage
 -----
