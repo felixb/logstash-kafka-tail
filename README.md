@@ -1,13 +1,15 @@
 logstash-kafka-tail
 ===================
 
+[![Build Status](https://travis-ci.org/felixb/logstash-kafka-tail.svg)](https://travis-ci.org/felixb/logstash-kafka-tail)
+
 logstash-kafka-tail is a tail/grep like tool for tracking logs on command line when using logstash with kafka.
 It consumes a kafka topic and parses the logstash/json formated log messages to print them on stdandard out.
 
 Installation
 ------------
 
-Install the binary with `go get` and `go install` or download prebuid binarys from the release section.
+Install the binary with `go get` and `go install` or download [prebuid binarys](https://github.com/felixb/logstash-kafka-tail/releases/latest) from the release section.
 
     export GOPATH=${HOME}/go
     export PATH=${GOPATH}/bin:${PATH}
@@ -19,16 +21,16 @@ Usage
 
 logstash-kafka-tail has the following command line options:
 
-  -F, --filter=[]                                                       filter messages, specify like 'type:chaos-monkey'
-                                                                          all filters must match when applied multiple times
-  -f, --format=%{@timestamp} %{type} %{HOSTNAME} %{level} %{message}    format output in grok syntax
-                                                                          also read from env 'KAFKA_LOGGING_FORMAT'
-  -h, --hosts=[]                                                        kafka hosts
-                                                                          also read from env 'KAFKA_LOGGING_HOSTS'
-  -o, --offset=-1                                                       offset to start reading, -1 => newest, -2 => oldest
-  -t, --topic=logstash                                                  kafka topic
-                                                                          also read from env 'KAFKA_LOGGING_TOPIC'
-  --version=false                                                       prints the version
+    -F, --filter=[]                                                       filter messages, specify like 'type:chaos-monkey'
+                                                                            all filters must match when applied multiple times
+    -f, --format=%{@timestamp} %{type} %{HOSTNAME} %{level} %{message}    format output in grok syntax
+                                                                            also read from env 'KAFKA_LOGGING_FORMAT'
+    -h, --hosts=[]                                                        kafka hosts
+                                                                            also read from env 'KAFKA_LOGGING_HOSTS'
+    -o, --offset=-1                                                       offset to start reading, -1 => newest, -2 => oldest
+    -t, --topic=logstash                                                  kafka topic
+                                                                            also read from env 'KAFKA_LOGGING_TOPIC'
+    --version=false                                                       prints the version
 
 It's possible to set `-hosts`, `-topic` and `-format` as evironment variable like this:
 
