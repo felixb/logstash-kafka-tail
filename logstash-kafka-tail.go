@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -15,7 +14,6 @@ import (
 	flag "github.com/docker/docker/pkg/mflag"
 )
 
-type Message map[string]interface{}
 type args []string
 
 const (
@@ -33,44 +31,12 @@ const (
 )
 
 var (
-	hosts        args
-	topic        string
-	offset       int64
-	formatString string
-	formatRegexp = regexp.MustCompile("%{[^}]+}")
-	filters      = map[string]string{}
+	hosts     args
+	topic     string
+	offset    int64
+	formatter Formatter
+	filters   = map[string]string{}
 )
-
-func (m *Message) get(key string) (string, bool) {
-	if (*m)[key] == nil {
-		return "%{null}", false
-	} else {
-		return fmt.Sprint((*m)[key]), true
-	}
-}
-
-// match message filters
-func (m *Message) filter() bool {
-	for k, f := range filters {
-		v, ok := m.get(k)
-		if !ok {
-			return false
-		}
-		if fmt.Sprint(v) != f {
-			return false
-		}
-	}
-	return true
-}
-
-// format a single message consumed from kafka
-func (m *Message) format() string {
-	return formatRegexp.ReplaceAllStringFunc(formatString, func(s string) string {
-		key := s[2 : len(s)-1]
-		v, _ := m.get(key)
-		return v
-	})
-}
 
 // unmarshal the message
 func unmarshal(msg *sarama.ConsumerMessage) (*Message, error) {
@@ -132,8 +98,8 @@ func printMessages(wg *sync.WaitGroup, ch chan *Message) {
 	for {
 		select {
 		case m := <-ch:
-			if m.filter() {
-				fmt.Println(m.format())
+			if m.Filter() {
+				formatter.Print(m)
 			}
 		case <-signals:
 			return
@@ -259,6 +225,7 @@ func main() {
 
 	var filterList args
 	var showVersion bool
+	var formatString string
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -286,6 +253,8 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	formatter = NewFormatter(formatString)
 
 	for _, fltr := range filterList {
 		parts := strings.SplitN(fltr, ":", 2)
