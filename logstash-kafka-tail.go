@@ -41,10 +41,18 @@ var (
 	filters      = map[string]string{}
 )
 
+func (m *Message) get(key string) (string, bool) {
+	if (*m)[key] == nil {
+		return "%{null}", false
+	} else {
+		return fmt.Sprint((*m)[key]), true
+	}
+}
+
 // match message filters
-func filter(m Message) bool {
+func (m *Message) filter() bool {
 	for k, f := range filters {
-		v, ok := m[k]
+		v, ok := m.get(k)
 		if !ok {
 			return false
 		}
@@ -56,36 +64,33 @@ func filter(m Message) bool {
 }
 
 // format a single message consumed from kafka
-func format(m Message) string {
+func (m *Message) format() string {
 	return formatRegexp.ReplaceAllStringFunc(formatString, func(s string) string {
 		key := s[2 : len(s)-1]
-		if m[key] == nil {
-			return "%{null}"
-		} else {
-			return fmt.Sprint(m[key])
-		}
+		v, _ := m.get(key)
+		return v
 	})
 }
 
 // unmarshal the message
-func unmarshal(msg *sarama.ConsumerMessage) (Message, error) {
-	var m Message
-	err := json.Unmarshal(msg.Value, &m)
+func unmarshal(msg *sarama.ConsumerMessage) (*Message, error) {
+	var m *Message
+	err := json.Unmarshal(msg.Value, m)
 	return m, err
 }
 
 // unmarshals, filters and prints a formated message
-func handleMessage(msg *sarama.ConsumerMessage) {
+func handleMessage(msg *sarama.ConsumerMessage, ch chan *Message) {
 	m, err := unmarshal(msg)
 	if err != nil {
 		log.Printf("error (%s) parsing message: %s", err, msg.Value)
-	} else if filter(m) {
-		fmt.Println(format(m))
+	} else {
+		ch <- m
 	}
 }
 
 // consumes a single partition
-func consumePartition(wg *sync.WaitGroup, master sarama.Consumer, partition int32) {
+func consumePartition(wg *sync.WaitGroup, master sarama.Consumer, partition int32, ch chan *Message) {
 	defer wg.Done()
 	log.Printf("Starting consumer for partition %d", partition)
 
@@ -108,7 +113,7 @@ func consumePartition(wg *sync.WaitGroup, master sarama.Consumer, partition int3
 		case err := <-consumer.Errors():
 			log.Println(err)
 		case msg := <-consumer.Messages():
-			handleMessage(msg)
+			handleMessage(msg, ch)
 			msgCount++
 		case <-signals:
 			log.Printf("Stopping consumer for partition %d, processed %d messages", partition, msgCount)
@@ -117,10 +122,23 @@ func consumePartition(wg *sync.WaitGroup, master sarama.Consumer, partition int3
 	}
 }
 
-// starts a go routine consuming a single partition
-func spawnPartitionConsumer(wg *sync.WaitGroup, master sarama.Consumer, partition int32) {
-	wg.Add(1)
-	go consumePartition(wg, master, partition)
+// reads and filters Messages from chan and prints them to stdout
+func printMessages(wg *sync.WaitGroup, ch chan *Message) {
+	defer wg.Done()
+
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
+	for {
+		select {
+		case m := <-ch:
+			if m.filter() {
+				fmt.Println(m.format())
+			}
+		case <-signals:
+			return
+		}
+	}
 }
 
 // connects to one of a list of brokers
@@ -195,9 +213,19 @@ func consume() {
 	}()
 
 	var wg sync.WaitGroup
+	ch := make(chan *Message, 10)
+
+	// spawn the printer
+	wg.Add(1)
+	go printMessages(&wg, ch)
+
+	// spawn the consumers
 	for _, partition := range partitions {
-		spawnPartitionConsumer(&wg, master, partition)
+		wg.Add(1)
+		go consumePartition(&wg, master, partition, ch)
 	}
+
+	// wait for everyone to finish
 	wg.Wait()
 }
 

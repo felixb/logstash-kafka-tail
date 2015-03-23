@@ -13,14 +13,14 @@ func TestFilter(t *testing.T) {
 	m["c"] = true
 	m["foo"] = "bar"
 
-	if !(filter(m)) {
+	if !m.filter() {
 		t.Errorf("filter(%q) == false with filters=%q, want true", m, filters)
 	}
 
 	m = Message{}
 	m["abc"] = "123"
 
-	if filter(m) {
+	if m.filter() {
 		t.Errorf("filter(%q) == true with filters=%q, want false", m, filters)
 	}
 }
@@ -34,7 +34,7 @@ func TestFormat(t *testing.T) {
 	m["c"] = true
 
 	want := "abc foo 1 %{null} true bar"
-	got := format(m)
+	got := m.format()
 
 	if got != want {
 		t.Errorf("format(%q) == %q, want %q", m, got, want)
