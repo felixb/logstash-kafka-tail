@@ -14,12 +14,6 @@ func TestNewFormatter(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
-func TestFormatterString(t *testing.T) {
-	formatString := "abc %{test} %{foo} bar"
-	f := NewFormatter(formatString)
-	assert.Equal(t, "abc %v %v bar (test, foo)", f.String())
-}
-
 func TestFormatterFormat(t *testing.T) {
 	formatString := "abc %{test} %{foo} bar"
 	f := NewFormatter(formatString)
@@ -30,6 +24,6 @@ func TestFormatterFormat(t *testing.T) {
 	}
 
 	for want, m := range cases {
-		assert.Equal(t, want, f.Format(&m))
+		assert.Equal(t, want, f.format(&m))
 	}
 }

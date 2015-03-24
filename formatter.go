@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 type Formatter struct {
@@ -24,7 +23,7 @@ func NewFormatter(formatString string) Formatter {
 }
 
 // format a message
-func (f *Formatter) Format(m *Message) string {
+func (f *Formatter) format(m *Message) string {
 	var values []interface{}
 	for _, k := range f.Keys {
 		v, _ := m.Get(k)
@@ -36,9 +35,5 @@ func (f *Formatter) Format(m *Message) string {
 
 // print formatted message to stdout
 func (f *Formatter) Print(m *Message) {
-	fmt.Println(f.Format(m))
-}
-
-func (f *Formatter) String() string {
-	return f.FormatString + " (" + strings.Join(f.Keys, ", ") + ")"
+	fmt.Println(f.format(m))
 }
