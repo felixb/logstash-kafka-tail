@@ -18,12 +18,11 @@ type Consumer struct {
 	offset  int64
 	printer Printer
 	wg      sync.WaitGroup
-	ch      chan *Message
 }
 
 // create a new consumer
 func NewConsumer(h args, t string, o int64, p Printer) Consumer {
-	return Consumer{h, t, o, p, sync.WaitGroup{}, make(chan *Message, 10)}
+	return Consumer{h, t, o, p, sync.WaitGroup{}}
 }
 
 // start the consumer and listen to topic
@@ -46,10 +45,6 @@ func (c *Consumer) Start() {
 			log.Fatalln(err)
 		}
 	}()
-
-	// spawn the printer
-	c.wg.Add(1)
-	go c.printMessages()
 
 	// spawn the consumers
 	for _, partition := range partitions {
@@ -74,7 +69,7 @@ func (c *Consumer) handleMessage(msg *sarama.ConsumerMessage) {
 	if err != nil {
 		log.Printf("error (%s) parsing message: %s", err, msg.Value)
 	} else {
-		c.ch <- m
+		c.printer.Print(m)
 	}
 }
 
@@ -106,23 +101,6 @@ func (c *Consumer) consumePartition(master sarama.Consumer, partition int32) {
 			msgCount++
 		case <-signals:
 			log.Printf("Stopping consumer for partition %d, processed %d messages", partition, msgCount)
-			return
-		}
-	}
-}
-
-// reads and filters Messages from chan and prints them to stdout
-func (c *Consumer) printMessages() {
-	defer c.wg.Done()
-
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-
-	for {
-		select {
-		case m := <-c.ch:
-			c.printer.Print(m)
-		case <-signals:
 			return
 		}
 	}

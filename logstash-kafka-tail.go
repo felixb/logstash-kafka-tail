@@ -104,6 +104,10 @@ func main() {
 		printer = &formatter
 	}
 
-	consumer := NewConsumer(hosts, topic, offset, printer)
+	async := NewAsyncPrinter(printer)
+	async.Start()
+
+	consumer := NewConsumer(hosts, topic, offset, &async)
 	consumer.Start()
+	async.Wait()
 }
