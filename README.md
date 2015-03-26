@@ -23,7 +23,8 @@ logstash-kafka-tail has the following command line options:
 
     -F, --filter=[]                                                       filter messages, specify like 'type:chaos-monkey'
                                                                             all filters must match when applied multiple times
-    -f, --format=%{@timestamp} %{type} %{HOSTNAME} %{level} %{message}    format output in grok syntax
+    -f, --format='{@timestamp} %{type} %{HOSTNAME,hostname} %{level,loglevel,log_level,severity} %{message}'
+                                                                          format output in grok syntax
                                                                             also read from env 'KAFKA_LOGGING_FORMAT'
     -h, --hosts=[]                                                        kafka hosts
                                                                             also read from env 'KAFKA_LOGGING_HOSTS'
@@ -36,9 +37,11 @@ It's possible to set `-hosts`, `-topic` and `-format` as evironment variable lik
 
     export KAFKA_LOGGING_HOSTS="kafka-01.example.com:9092,kafka-02.example.com:9092"
     export KAFKA_LOGGING_TOPIC="customloggingtopic"
-    export KAFKA_LOGGING_FORMAT="%{@timestamp} >> %{type} %{host} %{log_level} ### %{custom_field} %{message}"
+    export KAFKA_LOGGING_FORMAT="%{@timestamp} >> %{type} %{host} %{log_level,loglevel,level,severity} ### %{custom_field} %{message}"
 
 The `-filter` option shows only those messages, which match every single key/value pair specified in the option.
+
+If fields are specified as a comma separated list, the first found field wins the race.
 
 Logging to Kafka
 ----------------

@@ -19,7 +19,7 @@ const (
 	usageTopic    = "kafka topic\nalso read from env 'KAFKA_LOGGING_TOPIC'"
 	defaultOffset = sarama.OffsetNewest
 	usageOffset   = "offset to start reading, -1 => newest, -2 => oldest"
-	defaultFormat = "%{@timestamp} %{type} %{HOSTNAME} %{level} %{message}"
+	defaultFormat = "%{@timestamp} %{type} %{HOSTNAME,hostname} %{level,loglevel,log_level,severity} %{message}"
 	usageFormat   = "format output in grok syntax\nalso read from env 'KAFKA_LOGGING_FORMAT'"
 	usageFilter   = "filter messages, specify like 'type:chaos-monkey'\nall filters must match when applied multiple times"
 	usageVersion  = "prints the version"
