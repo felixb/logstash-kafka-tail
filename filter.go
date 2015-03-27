@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Filter struct {
@@ -23,7 +24,14 @@ func (f *Filter) filter(m *Message) bool {
 		if !ok {
 			return false
 		}
-		if fmt.Sprint(v) != f {
+		found := false
+		for _, f := range strings.Split(f, ",") {
+			if fmt.Sprint(v) == f {
+				found = true
+				break
+			}
+		}
+		if !found {
 			return false
 		}
 	}

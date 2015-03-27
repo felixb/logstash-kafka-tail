@@ -30,9 +30,7 @@ func (a *args) String() string {
 }
 
 func (a *args) Set(value string) error {
-	for _, arg := range strings.Split(value, ",") {
-		*a = append(*a, arg)
-	}
+	*a = append(*a, value)
 	return nil
 }
 
