@@ -12,7 +12,7 @@ import (
 type args []string
 
 const (
-	version       = "0.1.0"
+	version       = "0.2.0"
 	defaultHosts  = "localhost:9092"
 	usageHosts    = "kafka hosts\nalso read from env 'KAFKA_LOGGING_HOSTS'"
 	defaultTopic  = "logstash"
