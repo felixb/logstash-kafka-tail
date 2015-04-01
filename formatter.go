@@ -6,17 +6,17 @@ import (
 )
 
 type Formatter struct {
-	FormatString string
-	Keys         []string
+	formatString string
+	keys         []string
 }
 
 // create a new formatter
-func NewFormatter(formatString string) Formatter {
+func NewFormatter(frmtStr string) Formatter {
 	re := regexp.MustCompile("%{[^}]+}")
 	f := Formatter{}
-	f.FormatString = re.ReplaceAllStringFunc(formatString, func(s string) string {
+	f.formatString = re.ReplaceAllStringFunc(frmtStr, func(s string) string {
 		key := s[2 : len(s)-1]
-		f.Keys = append(f.Keys, key)
+		f.keys = append(f.keys, key)
 		return "%v"
 	})
 	return f
@@ -24,13 +24,22 @@ func NewFormatter(formatString string) Formatter {
 
 // format a message
 func (f *Formatter) format(m *Message) string {
-	var values []interface{}
-	for _, k := range f.Keys {
-		v, _ := m.Get(k)
-		values = append(values, v)
-	}
+	if len(f.formatString) > 0 {
+		var values []interface{}
+		for _, k := range f.keys {
+			v, _ := m.Get(k)
+			values = append(values, v)
+		}
 
-	return fmt.Sprintf(f.FormatString, values...)
+		return fmt.Sprintf(f.formatString, values...)
+	} else {
+		j, err := m.ToJson()
+		if err != nil {
+			return fmt.Sprintf("error: %v", err)
+		} else {
+			return string(j)
+		}
+	}
 }
 
 // print formatted message to stdout

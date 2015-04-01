@@ -27,3 +27,16 @@ func TestFormatterFormat(t *testing.T) {
 		assert.Equal(t, want, f.format(&m))
 	}
 }
+
+func TestFormatterFormatWithNoFormatString(t *testing.T) {
+	f := NewFormatter("")
+
+	cases := map[string]Message{
+		"{\"foo\":123,\"test\":\"foo\"}": Message{"test": "foo", "foo": 123},
+		"{\"foo\":true}":                 Message{"foo": true},
+	}
+
+	for want, m := range cases {
+		assert.Equal(t, want, f.format(&m))
+	}
+}

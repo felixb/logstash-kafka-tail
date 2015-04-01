@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -56,16 +55,9 @@ func (c *Consumer) Start() {
 	c.wg.Wait()
 }
 
-// unmarshal the message
-func (c *Consumer) unmarshal(msg *sarama.ConsumerMessage) (*Message, error) {
-	var m Message
-	err := json.Unmarshal(msg.Value, &m)
-	return &m, err
-}
-
 // unmarshals, filters and prints a formated message
 func (c *Consumer) handleMessage(msg *sarama.ConsumerMessage) {
-	m, err := c.unmarshal(msg)
+	m, err := NewMessageFromJson(msg.Value)
 	if err != nil {
 		log.Printf("error (%s) parsing message: %s", err, msg.Value)
 	} else {
